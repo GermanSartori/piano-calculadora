@@ -1,7 +1,6 @@
 # 🎹 Piano Calculadora de Armonía
 
 > ### 🚀 **ACCEDER A LA APP AQUÍ: https://germansartori.github.io/piano-calculadora/**
-> *(clic en el enlace superior para abrir la calculadora en tu navegador)*
 
 Esta herramienta permite visualizar intervalos, construir escalas y escuchar acordes de forma inmediata, funcionando como una calculadora visual sobre el teclado.
 
