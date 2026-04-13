@@ -1,4 +1,4 @@
-# 🎹 Piano Calculadora de Armonía
+# 🎹 Piano Calculadora
 
 > ### 🚀 **ACCEDER A LA APP AQUÍ: https://germansartori.github.io/piano-calculadora/**
 
