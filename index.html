@@ -3,7 +3,8 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta property="og:title" content="Piano Calculadora">
     <title>Piano Calculadora</title>
     <style>
         body {
@@ -13,84 +14,155 @@
             align-items: center;
             background-color: #f0f2f5;
             margin: 0;
-            padding: 20px;
+            padding: 10px;
+            min-height: 100vh;
+            touch-action: manipulation;
+            overflow: hidden;
+            /* Evita scrolls raros en el body */
         }
 
         h1 {
             color: #333;
-            margin-bottom: 20px;
+            margin: 5px 0;
+            font-size: 1.2rem;
+        }
+
+        /* Cartel para obligar a girar el celular */
+        #turn-device-warning {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #2c3e50;
+            color: white;
+            z-index: 9999;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        @media (orientation: portrait) and (max-width: 900px) {
+            #turn-device-warning {
+                display: flex;
+            }
+        }
+
+        .piano-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            padding: 10px 0;
+            display: flex;
+            justify-content: center;
+            -webkit-overflow-scrolling: touch;
         }
 
         .piano {
             display: flex;
             position: relative;
             background: #222;
-            padding: 10px 5px 40px 5px;
+            padding: 5px;
             border-radius: 8px;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            height: 160px;
+            /* Un poco más bajo para que entre todo en horizontal */
+            flex-shrink: 0;
         }
 
         .key {
             position: relative;
-            width: 60px;
-            height: 200px;
+            width: 50px;
+            height: 100%;
             background: white;
             border: 1px solid #ccc;
             border-radius: 0 0 5px 5px;
             cursor: pointer;
-            transition: background 0.2s;
-            z-index: 1;
-        }
-
-        .key:hover {
-            background: #eee;
+            box-sizing: border-box;
+            flex-shrink: 0;
         }
 
         .key.black {
-            width: 40px;
-            height: 120px;
+            position: absolute;
+            width: 32px;
+            height: 95px;
             background: #333;
-            margin-left: -20px;
-            margin-right: -20px;
             z-index: 2;
             border: none;
+            border-radius: 0 0 3px 3px;
         }
 
-        .key.black:hover {
-            background: #444;
+        /* Posiciones exactas */
+        .black-do-re {
+            left: 39px;
         }
 
-        /* Estilo de selección (Azul) */
+        .black-re-mi {
+            left: 89px;
+        }
+
+        .black-fa-sol {
+            left: 189px;
+        }
+
+        .black-sol-la {
+            left: 239px;
+        }
+
+        .black-la-si {
+            left: 289px;
+        }
+
+        .o2-1 {
+            left: 389px;
+        }
+
+        .o2-2 {
+            left: 439px;
+        }
+
+        .o2-3 {
+            left: 539px;
+        }
+
+        .o2-4 {
+            left: 589px;
+        }
+
+        .o2-5 {
+            left: 639px;
+        }
+
         .key.selected {
             background: #3498db !important;
-            box-shadow: inset 0 -10px 0 #2980b9;
+            box-shadow: inset 0 -8px 0 #2980b9;
         }
 
         .key.black.selected {
             background: #2980b9 !important;
         }
 
-        /* Etiquetas de notas */
         .key::after {
             content: attr(data-note);
             position: absolute;
-            bottom: 10px;
+            bottom: 5px;
             left: 50%;
             transform: translateX(-50%);
-            font-size: 12px;
+            font-size: 9px;
             font-weight: bold;
             color: #888;
             pointer-events: none;
             text-align: center;
             white-space: pre-wrap;
-            line-height: 1.2;
         }
 
-        /* Ajuste para teclas negras (Enarmonías) */
         .key.black::after {
             color: #fff;
-            bottom: 8px;
-            font-size: 10px;
+            bottom: 4px;
+            font-size: 8px;
         }
 
         .key.selected::after {
@@ -98,21 +170,22 @@
         }
 
         .controls {
-            margin-top: 30px;
+            margin-top: 10px;
             display: flex;
-            gap: 15px;
+            gap: 10px;
+            width: 100%;
+            justify-content: center;
         }
 
         button {
-            padding: 12px 25px;
-            font-size: 16px;
+            padding: 12px 20px;
+            font-size: 14px;
             cursor: pointer;
             border: none;
-            border-radius: 5px;
-            transition: 0.3s;
+            border-radius: 8px;
             color: white;
             font-weight: bold;
-            min-width: 150px;
+            min-width: 120px;
         }
 
         .btn-play {
@@ -127,44 +200,67 @@
             background: #e74c3c;
         }
 
-        .btn-clear:hover {
-            background: #c0392b;
+        .rotation-icon {
+            font-size: 50px;
+            margin-bottom: 20px;
+            animation: rotate 2s infinite;
+        }
+
+        @keyframes rotate {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            50% {
+                transform: rotate(90deg);
+            }
+
+            100% {
+                transform: rotate(0deg);
+            }
         }
     </style>
 </head>
 
 <body>
 
+    <div id="turn-device-warning">
+        <div class="rotation-icon">📱🔄</div>
+        <h2>Por favor, gira tu dispositivo</h2>
+        <p>Esta calculadora está diseñada para usarse en modo horizontal.</p>
+    </div>
+
     <h1>Piano Calculadora</h1>
 
-    <div class="piano" id="piano">
-        <div class="key" data-note="Do" data-freq="130.81"></div>
-        <div class="key black" data-note="Do#&#10;Re♭" data-freq="138.59"></div>
-        <div class="key" data-note="Re" data-freq="146.83"></div>
-        <div class="key black" data-note="Re#&#10;Mi♭" data-freq="155.56"></div>
-        <div class="key" data-note="Mi" data-freq="164.81"></div>
-        <div class="key" data-note="Fa" data-freq="174.61"></div>
-        <div class="key black" data-note="Fa#&#10;Sol♭" data-freq="185.00"></div>
-        <div class="key" data-note="Sol" data-freq="196.00"></div>
-        <div class="key black" data-note="Sol#&#10;La♭" data-freq="207.65"></div>
-        <div class="key" data-note="La" data-freq="220.00"></div>
-        <div class="key black" data-note="La#&#10;Si♭" data-freq="233.08"></div>
-        <div class="key" data-note="Si" data-freq="246.94"></div>
+    <div class="piano-wrapper">
+        <div class="piano">
+            <div class="key" data-note="Do" data-freq="130.81"></div>
+            <div class="key" data-note="Re" data-freq="146.83"></div>
+            <div class="key" data-note="Mi" data-freq="164.81"></div>
+            <div class="key" data-note="Fa" data-freq="174.61"></div>
+            <div class="key" data-note="Sol" data-freq="196.00"></div>
+            <div class="key" data-note="La" data-freq="220.00"></div>
+            <div class="key" data-note="Si" data-freq="246.94"></div>
+            <div class="key" data-note="Do" data-freq="261.63"></div>
+            <div class="key" data-note="Re" data-freq="293.66"></div>
+            <div class="key" data-note="Mi" data-freq="329.63"></div>
+            <div class="key" data-note="Fa" data-freq="349.23"></div>
+            <div class="key" data-note="Sol" data-freq="392.00"></div>
+            <div class="key" data-note="La" data-freq="440.00"></div>
+            <div class="key" data-note="Si" data-freq="493.88"></div>
+            <div class="key" data-note="Do" data-freq="523.25"></div>
 
-        <div class="key" data-note="Do" data-freq="261.63"></div>
-        <div class="key black" data-note="Do#&#10;Re♭" data-freq="277.18"></div>
-        <div class="key" data-note="Re" data-freq="293.66"></div>
-        <div class="key black" data-note="Re#&#10;Mi♭" data-freq="311.13"></div>
-        <div class="key" data-note="Mi" data-freq="329.63"></div>
-        <div class="key" data-note="Fa" data-freq="349.23"></div>
-        <div class="key black" data-note="Fa#&#10;Sol♭" data-freq="369.99"></div>
-        <div class="key" data-note="Sol" data-freq="392.00"></div>
-        <div class="key black" data-note="Sol#&#10;La♭" data-freq="415.30"></div>
-        <div class="key" data-note="La" data-freq="440.00"></div>
-        <div class="key black" data-note="La#&#10;Si♭" data-freq="466.16"></div>
-        <div class="key" data-note="Si" data-freq="493.88"></div>
-
-        <div class="key" data-note="Do" data-freq="523.25"></div>
+            <div class="key black black-do-re" data-note="Do#&#10;Re♭" data-freq="138.59"></div>
+            <div class="key black black-re-mi" data-note="Re#&#10;Mi♭" data-freq="155.56"></div>
+            <div class="key black black-fa-sol" data-note="Fa#&#10;Sol♭" data-freq="185.00"></div>
+            <div class="key black black-sol-la" data-note="Sol#&#10;La♭" data-freq="207.65"></div>
+            <div class="key black black-la-si" data-note="La#&#10;Si♭" data-freq="233.08"></div>
+            <div class="key black o2-1" data-note="Do#&#10;Re♭" data-freq="277.18"></div>
+            <div class="key black o2-2" data-note="Re#&#10;Mi♭" data-freq="311.13"></div>
+            <div class="key black o2-3" data-note="Fa#&#10;Sol♭" data-freq="369.99"></div>
+            <div class="key black o2-4" data-note="Sol#&#10;La♭" data-freq="415.30"></div>
+            <div class="key black o2-5" data-note="La#&#10;Si♭" data-freq="466.16"></div>
+        </div>
     </div>
 
     <div class="controls">
@@ -174,25 +270,34 @@
 
     <script>
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const masterGain = audioCtx.createGain();
+        masterGain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+        masterGain.connect(audioCtx.destination);
+
         const keys = document.querySelectorAll('.key');
         const activeNodes = new Map();
         let isAudioPlaying = false;
 
+        // Intentar forzar rotación (requiere interacción previa)
+        async function lockOrientation() {
+            try {
+                if (screen.orientation && screen.orientation.lock) {
+                    await screen.orientation.lock('landscape');
+                }
+            } catch (e) {
+                console.log("No se pudo bloquear la orientación: ", e);
+            }
+        }
+
         function startNote(keyElement, freq) {
             if (activeNodes.has(keyElement)) stopNote(keyElement);
-
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
-
-            osc.type = 'sine';
+            osc.type = 'triangle';
             osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-
             gain.gain.setValueAtTime(0, audioCtx.currentTime);
-            gain.gain.linearRampToValueAtTime(0.25, audioCtx.currentTime + 0.1);
-
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-
+            gain.gain.linearRampToValueAtTime(0.15, audioCtx.currentTime + 0.1);
+            osc.connect(gain); gain.connect(masterGain);
             osc.start();
             activeNodes.set(keyElement, { oscillator: osc, gainNode: gain });
         }
@@ -203,16 +308,16 @@
                 const now = audioCtx.currentTime;
                 node.gainNode.gain.cancelScheduledValues(now);
                 node.gainNode.gain.setValueAtTime(node.gainNode.gain.value, now);
-                node.gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
-                node.oscillator.stop(now + 0.5);
+                node.gainNode.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+                node.oscillator.stop(now + 0.4);
                 activeNodes.delete(keyElement);
             }
         }
 
         keys.forEach(key => {
-            key.addEventListener('mousedown', () => {
+            key.addEventListener('pointerdown', (e) => {
+                e.preventDefault();
                 key.classList.toggle('selected');
-
                 if (isAudioPlaying) {
                     if (key.classList.contains('selected')) {
                         startNote(key, parseFloat(key.getAttribute('data-freq')));
@@ -225,16 +330,12 @@
 
         function togglePlay() {
             if (audioCtx.state === 'suspended') audioCtx.resume();
+            lockOrientation(); // Intentamos girar al darle play
             const btn = document.getElementById('playBtn');
-
             if (!isAudioPlaying) {
                 isAudioPlaying = true;
                 btn.classList.add('active');
-                keys.forEach(key => {
-                    if (key.classList.contains('selected')) {
-                        startNote(key, parseFloat(key.getAttribute('data-freq')));
-                    }
-                });
+                keys.forEach(key => { if (key.classList.contains('selected')) startNote(key, parseFloat(key.getAttribute('data-freq'))); });
             } else {
                 isAudioPlaying = false;
                 btn.classList.remove('active');
@@ -245,10 +346,7 @@
         function clearAll() {
             isAudioPlaying = false;
             document.getElementById('playBtn').classList.remove('active');
-            keys.forEach(key => {
-                stopNote(key);
-                key.classList.remove('selected');
-            });
+            keys.forEach(key => { stopNote(key); key.classList.remove('selected'); });
         }
     </script>
 </body>
