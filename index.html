@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta property="og:title" content="Piano Calculadora">
+    <meta property="og:description" content="Herramienta interactiva para clases de armonía">
     <title>Piano Calculadora</title>
     <style>
         body {
@@ -17,24 +17,33 @@
             padding: 10px;
             min-height: 100vh;
             touch-action: manipulation;
-            overflow: hidden;
-            /* Evita scrolls raros en el body */
+            overflow-x: hidden;
         }
 
-        h1 {
-            color: #333;
-            margin: 5px 0;
-            font-size: 1.2rem;
+        h1 { color: #333; margin: 5px 0; font-size: 1.2rem; }
+
+        /* Pantalla del contador de intervalos */
+        .interval-display {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 10px 25px;
+            border-radius: 50px;
+            margin: 10px 0;
+            font-weight: bold;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            min-height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 250px;
         }
 
-        /* Cartel para obligar a girar el celular */
+        /* Aviso de rotación para celulares */
         #turn-device-warning {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
             background: #2c3e50;
             color: white;
             z-index: 9999;
@@ -47,15 +56,13 @@
         }
 
         @media (orientation: portrait) and (max-width: 900px) {
-            #turn-device-warning {
-                display: flex;
-            }
+            #turn-device-warning { display: flex; }
         }
 
         .piano-wrapper {
             width: 100%;
             overflow-x: auto;
-            padding: 10px 0;
+            padding: 15px 0;
             display: flex;
             justify-content: center;
             -webkit-overflow-scrolling: touch;
@@ -68,8 +75,7 @@
             padding: 5px;
             border-radius: 8px;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
-            height: 160px;
-            /* Un poco más bajo para que entre todo en horizontal */
+            height: 180px;
             flex-shrink: 0;
         }
 
@@ -88,89 +94,42 @@
         .key.black {
             position: absolute;
             width: 32px;
-            height: 95px;
+            height: 105px;
             background: #333;
             z-index: 2;
             border: none;
             border-radius: 0 0 3px 3px;
         }
 
-        /* Posiciones exactas */
-        .black-do-re {
-            left: 39px;
-        }
+        /* Posiciones exactas de las negras */
+        .black-do-re { left: 39px; } .black-re-mi { left: 89px; }
+        .black-fa-sol { left: 189px; } .black-sol-la { left: 239px; } .black-la-si { left: 289px; }
+        .o2-1 { left: 389px; } .o2-2 { left: 439px; }
+        .o2-3 { left: 539px; } .o2-4 { left: 589px; } .o2-5 { left: 639px; }
 
-        .black-re-mi {
-            left: 89px;
-        }
-
-        .black-fa-sol {
-            left: 189px;
-        }
-
-        .black-sol-la {
-            left: 239px;
-        }
-
-        .black-la-si {
-            left: 289px;
-        }
-
-        .o2-1 {
-            left: 389px;
-        }
-
-        .o2-2 {
-            left: 439px;
-        }
-
-        .o2-3 {
-            left: 539px;
-        }
-
-        .o2-4 {
-            left: 589px;
-        }
-
-        .o2-5 {
-            left: 639px;
-        }
-
-        .key.selected {
-            background: #3498db !important;
-            box-shadow: inset 0 -8px 0 #2980b9;
-        }
-
-        .key.black.selected {
-            background: #2980b9 !important;
-        }
+        .key.selected { background: #3498db !important; box-shadow: inset 0 -8px 0 #2980b9; }
+        .key.black.selected { background: #2980b9 !important; }
 
         .key::after {
             content: attr(data-note);
             position: absolute;
-            bottom: 5px;
+            bottom: 8px;
             left: 50%;
             transform: translateX(-50%);
-            font-size: 9px;
+            font-size: 10px;
             font-weight: bold;
             color: #888;
             pointer-events: none;
             text-align: center;
             white-space: pre-wrap;
+            line-height: 1.1;
         }
 
-        .key.black::after {
-            color: #fff;
-            bottom: 4px;
-            font-size: 8px;
-        }
-
-        .key.selected::after {
-            color: white !important;
-        }
+        .key.black::after { color: #fff; bottom: 6px; font-size: 9px; }
+        .key.selected::after { color: white !important; }
 
         .controls {
-            margin-top: 10px;
+            margin-top: 20px;
             display: flex;
             gap: 10px;
             width: 100%;
@@ -178,88 +137,71 @@
         }
 
         button {
-            padding: 12px 20px;
+            padding: 15px 25px;
             font-size: 14px;
             cursor: pointer;
             border: none;
             border-radius: 8px;
             color: white;
             font-weight: bold;
-            min-width: 120px;
+            min-width: 130px;
+            transition: 0.2s;
         }
 
-        .btn-play {
-            background: #2ecc71;
-        }
+        .btn-play { background: #2ecc71; }
+        .btn-play.active { background: #e67e22; }
+        .btn-clear { background: #e74c3c; }
 
-        .btn-play.active {
-            background: #e67e22;
-        }
-
-        .btn-clear {
-            background: #e74c3c;
-        }
-
-        .rotation-icon {
-            font-size: 50px;
-            margin-bottom: 20px;
-            animation: rotate 2s infinite;
-        }
-
-        @keyframes rotate {
-            0% {
-                transform: rotate(0deg);
-            }
-
-            50% {
-                transform: rotate(90deg);
-            }
-
-            100% {
-                transform: rotate(0deg);
-            }
+        .rotation-icon { font-size: 40px; margin-bottom: 15px; animation: rotate 2s infinite; }
+        @keyframes rotate { 0% { transform: rotate(0deg); } 50% { transform: rotate(90deg); } 100% { transform: rotate(0deg); } }
+        
+        @media (max-width: 600px) {
+            .piano-wrapper { justify-content: flex-start; }
         }
     </style>
 </head>
-
 <body>
 
     <div id="turn-device-warning">
-        <div class="rotation-icon">📱🔄</div>
-        <h2>Por favor, gira tu dispositivo</h2>
-        <p>Esta calculadora está diseñada para usarse en modo horizontal.</p>
+        <div class="rotation-icon">📱</div>
+        <h2>Gira el dispositivo</h2>
+        <p>Usa el modo horizontal para ver el piano completo.</p>
     </div>
 
     <h1>Piano Calculadora</h1>
 
+    <div class="interval-display" id="intervalDisplay">
+        📏 Selecciona 2 notas
+    </div>
+
     <div class="piano-wrapper">
         <div class="piano">
-            <div class="key" data-note="Do" data-freq="130.81"></div>
-            <div class="key" data-note="Re" data-freq="146.83"></div>
-            <div class="key" data-note="Mi" data-freq="164.81"></div>
-            <div class="key" data-note="Fa" data-freq="174.61"></div>
-            <div class="key" data-note="Sol" data-freq="196.00"></div>
-            <div class="key" data-note="La" data-freq="220.00"></div>
-            <div class="key" data-note="Si" data-freq="246.94"></div>
-            <div class="key" data-note="Do" data-freq="261.63"></div>
-            <div class="key" data-note="Re" data-freq="293.66"></div>
-            <div class="key" data-note="Mi" data-freq="329.63"></div>
-            <div class="key" data-note="Fa" data-freq="349.23"></div>
-            <div class="key" data-note="Sol" data-freq="392.00"></div>
-            <div class="key" data-note="La" data-freq="440.00"></div>
-            <div class="key" data-note="Si" data-freq="493.88"></div>
-            <div class="key" data-note="Do" data-freq="523.25"></div>
+            <div class="key" data-note="Do" data-freq="130.81" data-idx="0"></div>
+            <div class="key" data-note="Re" data-freq="146.83" data-idx="2"></div>
+            <div class="key" data-note="Mi" data-freq="164.81" data-idx="4"></div>
+            <div class="key" data-note="Fa" data-freq="174.61" data-idx="5"></div>
+            <div class="key" data-note="Sol" data-freq="196.00" data-idx="7"></div>
+            <div class="key" data-note="La" data-freq="220.00" data-idx="9"></div>
+            <div class="key" data-note="Si" data-freq="246.94" data-idx="11"></div>
+            <div class="key" data-note="Do" data-freq="261.63" data-idx="12"></div>
+            <div class="key" data-note="Re" data-freq="293.66" data-idx="14"></div>
+            <div class="key" data-note="Mi" data-freq="329.63" data-idx="16"></div>
+            <div class="key" data-note="Fa" data-freq="349.23" data-idx="17"></div>
+            <div class="key" data-note="Sol" data-freq="392.00" data-idx="19"></div>
+            <div class="key" data-note="La" data-freq="440.00" data-idx="21"></div>
+            <div class="key" data-note="Si" data-freq="493.88" data-idx="23"></div>
+            <div class="key" data-note="Do" data-freq="523.25" data-idx="24"></div>
 
-            <div class="key black black-do-re" data-note="Do#&#10;Re♭" data-freq="138.59"></div>
-            <div class="key black black-re-mi" data-note="Re#&#10;Mi♭" data-freq="155.56"></div>
-            <div class="key black black-fa-sol" data-note="Fa#&#10;Sol♭" data-freq="185.00"></div>
-            <div class="key black black-sol-la" data-note="Sol#&#10;La♭" data-freq="207.65"></div>
-            <div class="key black black-la-si" data-note="La#&#10;Si♭" data-freq="233.08"></div>
-            <div class="key black o2-1" data-note="Do#&#10;Re♭" data-freq="277.18"></div>
-            <div class="key black o2-2" data-note="Re#&#10;Mi♭" data-freq="311.13"></div>
-            <div class="key black o2-3" data-note="Fa#&#10;Sol♭" data-freq="369.99"></div>
-            <div class="key black o2-4" data-note="Sol#&#10;La♭" data-freq="415.30"></div>
-            <div class="key black o2-5" data-note="La#&#10;Si♭" data-freq="466.16"></div>
+            <div class="key black black-do-re" data-note="Do#&#10;Re♭" data-freq="138.59" data-idx="1"></div>
+            <div class="key black black-re-mi" data-note="Re#&#10;Mi♭" data-freq="155.56" data-idx="3"></div>
+            <div class="key black black-fa-sol" data-note="Fa#&#10;Sol♭" data-freq="185.00" data-idx="6"></div>
+            <div class="key black black-sol-la" data-note="Sol#&#10;La♭" data-freq="207.65" data-idx="8"></div>
+            <div class="key black black-la-si" data-note="La#&#10;Si♭" data-freq="233.08" data-idx="10"></div>
+            <div class="key black o2-1" data-note="Do#&#10;Re♭" data-freq="277.18" data-idx="13"></div>
+            <div class="key black o2-2" data-note="Re#&#10;Mi♭" data-freq="311.13" data-idx="15"></div>
+            <div class="key black o2-3" data-note="Fa#&#10;Sol♭" data-freq="369.99" data-idx="18"></div>
+            <div class="key black o2-4" data-note="Sol#&#10;La♭" data-freq="415.30" data-idx="20"></div>
+            <div class="key black o2-5" data-note="La#&#10;Si♭" data-freq="466.16" data-idx="22"></div>
         </div>
     </div>
 
@@ -275,25 +217,53 @@
         masterGain.connect(audioCtx.destination);
 
         const keys = document.querySelectorAll('.key');
+        const intervalDisplay = document.getElementById('intervalDisplay');
         const activeNodes = new Map();
         let isAudioPlaying = false;
 
-        // Intentar forzar rotación (requiere interacción previa)
-        async function lockOrientation() {
-            try {
-                if (screen.orientation && screen.orientation.lock) {
-                    await screen.orientation.lock('landscape');
-                }
-            } catch (e) {
-                console.log("No se pudo bloquear la orientación: ", e);
+        function updateInterval() {
+            const selectedKeys = Array.from(document.querySelectorAll('.key.selected'))
+                                    .map(k => parseInt(k.getAttribute('data-idx')))
+                                    .sort((a, b) => a - b);
+
+            if (selectedKeys.length < 2) {
+                intervalDisplay.innerText = "📏 Selecciona 2 notas";
+                return;
             }
+
+            const diff = selectedKeys[selectedKeys.length - 1] - selectedKeys[0];
+            const tonos = Math.floor(diff / 2);
+            const semitonos = diff % 2;
+
+            let result = `📏 `;
+            if (tonos > 0) result += `${tonos} T`;
+            if (tonos > 0 && semitonos > 0) result += ` + `;
+            if (semitonos > 0) result += `1 ST`;
+            if (diff === 0) result = "📏 Misma nota";
+
+            intervalDisplay.innerText = result;
         }
+
+        keys.forEach(key => {
+            key.addEventListener('pointerdown', (e) => {
+                e.preventDefault();
+                key.classList.toggle('selected');
+                updateInterval();
+                if (isAudioPlaying) {
+                    if (key.classList.contains('selected')) {
+                        startNote(key, parseFloat(key.getAttribute('data-freq')));
+                    } else {
+                        stopNote(key);
+                    }
+                }
+            });
+        });
 
         function startNote(keyElement, freq) {
             if (activeNodes.has(keyElement)) stopNote(keyElement);
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
-            osc.type = 'triangle';
+            osc.type = 'triangle'; 
             osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
             gain.gain.setValueAtTime(0, audioCtx.currentTime);
             gain.gain.linearRampToValueAtTime(0.15, audioCtx.currentTime + 0.1);
@@ -314,23 +284,8 @@
             }
         }
 
-        keys.forEach(key => {
-            key.addEventListener('pointerdown', (e) => {
-                e.preventDefault();
-                key.classList.toggle('selected');
-                if (isAudioPlaying) {
-                    if (key.classList.contains('selected')) {
-                        startNote(key, parseFloat(key.getAttribute('data-freq')));
-                    } else {
-                        stopNote(key);
-                    }
-                }
-            });
-        });
-
         function togglePlay() {
             if (audioCtx.state === 'suspended') audioCtx.resume();
-            lockOrientation(); // Intentamos girar al darle play
             const btn = document.getElementById('playBtn');
             if (!isAudioPlaying) {
                 isAudioPlaying = true;
@@ -347,8 +302,8 @@
             isAudioPlaying = false;
             document.getElementById('playBtn').classList.remove('active');
             keys.forEach(key => { stopNote(key); key.classList.remove('selected'); });
+            updateInterval();
         }
     </script>
 </body>
-
 </html>
